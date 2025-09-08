@@ -1,0 +1,18 @@
+[project]
+name = "resumeparser"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.116.1",
+    "langchain>=0.3.27",
+    "langchain-google-genai>=2.1.10",
+    "pymupdf>=1.26.4",
+    "pypdf>=6.0.0",
+    "pypdf2>=3.0.1",
+    "python-docx>=1.2.0",
+    "python-dotenv>=1.1.1",
+    "python-multipart>=0.0.20",
+    "uvicorn>=0.35.0",
+]
