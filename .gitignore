@@ -12,4 +12,5 @@ wheels/
 
 #Extras
 TODO.txt
+gcp-key.json
 .vscode
