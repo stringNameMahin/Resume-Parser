@@ -26,27 +26,19 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 @app.post("/upload-resume")
 async def upload_resume(file: UploadFile = File(...)):
-    file_id = str(uuid.uuid4())
     extension = file.filename.split(".")[-1].lower()
 
     if extension not in ["pdf", "docx"]:
         raise HTTPException(status_code=400, detail="Only PDF and DOCX files are supported.")
 
-    temp_filename = os.path.join(UPLOAD_DIR, f"{file_id}.{extension}")
-    with open(temp_filename, "wb") as f:
-        f.write(await file.read())
+    file_content = await file.read()
 
     if extension == "pdf":
-        resume_text = extract_text_from_pdf(temp_filename)
+        resume_text = extract_text_from_pdf(file_content)
     elif extension == "docx":
-        resume_text = extract_text_from_docx(temp_filename)
+        resume_text = extract_text_from_docx(file_content)
 
     parsed_data = parse_resume(resume_text, api_key=API_KEY)
 
-    json_filename = os.path.join(UPLOAD_DIR, f"{file_id}.json")
-    with open(json_filename, "w", encoding="utf-8") as f:
-        json.dump(parsed_data.dict(), f, ensure_ascii=False, indent=4)
-
-    os.remove(temp_filename)
-
-    return {"message": f"Parsed data saved as {json_filename}", "parsed_data": parsed_data}
+    # Return the parsed data as JSON directly
+    return {"parsed_data": parsed_data}
