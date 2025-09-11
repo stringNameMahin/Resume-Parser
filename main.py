@@ -1,37 +1,23 @@
-# import os
-# import uuid
-# from fastapi import FastAPI, File, UploadFile
-
-# app = FastAPI()
-
-# # Store resumes temporarily in current working directory
-# UPLOAD_DIR = os.path.dirname(__file__)  
-# os.makedirs(UPLOAD_DIR, exist_ok=True)
-
-# @app.post("/upload-resume")
-# async def upload_resume(file: UploadFile = File(...)):
-#     file_id = str(uuid.uuid4())
-#     temp_filename = os.path.join(UPLOAD_DIR, f"{file_id}.pdf")
-
-#     with open(temp_filename, "wb") as f:
-#         f.write(await file.read())
-
-#     # ✅ Call your pipeline here instead of dummy return
-#     parsed_data = {"message": f"Temp file saved at {temp_filename}"}
-
-#     # Optionally delete file after parsing:
-#     # os.remove(temp_filename)
-
-#     return parsed_data
-
 import os
-from dotenv import load_dotenv
-load_dotenv()
+from google.cloud import secretmanager
 import uuid
 import json
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from parsers.pipeline import parse_resume
 from parsers.extractor import extract_text_from_pdf, extract_text_from_docx
+
+def get_api_key_from_secret(secret_name: str, project_id: str) -> str:
+    """
+    Fetch the secret value from Google Secret Manager
+    """
+    client = secretmanager.SecretManagerServiceClient()
+    secret_path = f"projects/{project_id}/secrets/{secret_name}/versions/latest"
+    response = client.access_secret_version(name=secret_path)
+    return response.payload.data.decode("UTF-8")
+
+PROJECT_ID = "abstract-stream-471415-r8"
+SECRET_NAME = "resume-parser-env"
+API_KEY = get_api_key_from_secret(SECRET_NAME, PROJECT_ID)
 
 app = FastAPI()
 
@@ -50,21 +36,17 @@ async def upload_resume(file: UploadFile = File(...)):
     with open(temp_filename, "wb") as f:
         f.write(await file.read())
 
-    # ✅ Extract text based on file type
     if extension == "pdf":
         resume_text = extract_text_from_pdf(temp_filename)
     elif extension == "docx":
         resume_text = extract_text_from_docx(temp_filename)
 
-    # ✅ Pass extracted text to parser
-    parsed_data = parse_resume(resume_text)
+    parsed_data = parse_resume(resume_text, api_key=API_KEY)
 
-    # ✅ Save parsed JSON
     json_filename = os.path.join(UPLOAD_DIR, f"{file_id}.json")
     with open(json_filename, "w", encoding="utf-8") as f:
         json.dump(parsed_data.dict(), f, ensure_ascii=False, indent=4)
 
-    # Optionally delete the uploaded file
     os.remove(temp_filename)
 
     return {"message": f"Parsed data saved as {json_filename}", "parsed_data": parsed_data}

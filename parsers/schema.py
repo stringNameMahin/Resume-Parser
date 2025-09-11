@@ -1,9 +1,7 @@
-# parsers/schema.py
 from pydantic import BaseModel
 from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import PromptTemplate
 
-# Define structured schema
 class ResumeSchema(BaseModel):
     name: str
     education: list[str]
@@ -13,10 +11,8 @@ class ResumeSchema(BaseModel):
     socials: list[str]
     achievements: list[str]
 
-# Output parser
 parser = PydanticOutputParser(pydantic_object=ResumeSchema)
 
-# Prompt template for LLM
 prompt = PromptTemplate(
     template="""
     You are a resume parsing assistant.
