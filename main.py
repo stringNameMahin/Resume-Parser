@@ -38,7 +38,7 @@ async def upload_resume(file: UploadFile = File(...)):
     elif extension == "docx":
         resume_text = extract_text_from_docx(file_content)
 
-    parsed_data = parse_resume(resume_text, api_key=API_KEY)
+    parsed_data = parse_resume(resume_text)
 
     # Return the parsed data as JSON directly
     return {"parsed_data": parsed_data}
