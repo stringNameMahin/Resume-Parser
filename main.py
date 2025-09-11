@@ -2,6 +2,7 @@ import os
 from google.cloud import secretmanager
 import uuid
 import json
+from langchain_google_genai import ChatGoogleGenerativeAI
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from parsers.pipeline import parse_resume
 from parsers.extractor import extract_text_from_pdf, extract_text_from_docx
@@ -18,6 +19,7 @@ def get_api_key_from_secret(secret_name: str, project_id: str) -> str:
 PROJECT_ID = "abstract-stream-471415-r8"
 SECRET_NAME = "resume-parser-env"
 API_KEY = get_api_key_from_secret(SECRET_NAME, PROJECT_ID)
+llm_instance = ChatGoogleGenerativeAI(api_key = API_KEY)
 
 app = FastAPI()
 
@@ -38,7 +40,7 @@ async def upload_resume(file: UploadFile = File(...)):
     elif extension == "docx":
         resume_text = extract_text_from_docx(file_content)
 
-    parsed_data = parse_resume(resume_text)
+    parsed_data = parse_resume(resume_text, llm=llm_instance)
 
     # Return the parsed data as JSON directly
     return {"parsed_data": parsed_data}
