@@ -23,7 +23,7 @@ SECRET_NAME = "resume-parser-env"
 API_KEY = get_api_key_from_secret(SECRET_NAME, PROJECT_ID)
 
 def _get_default_llm():
-    return ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.0, api_key=API_KEY)
+    return ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.0, google_api_key=API_KEY)
 
 def parse_resume(resume_text: str, links: list = None, llm=None):
     """Run LLM chain to parse resume into structured object."""
