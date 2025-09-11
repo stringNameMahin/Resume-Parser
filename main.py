@@ -34,7 +34,7 @@ async def upload_resume(file: UploadFile = File(...)):
 
     # Fetch secret and create LLM instance here
     api_key = get_api_key_from_secret(SECRET_NAME, PROJECT_ID)
-    llm_instance = ChatGoogleGenerativeAI(google_api_key=api_key)
+    llm_instance = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0.0, google_api_key=api_key)
 
     parsed_data = parse_resume(resume_text, llm=llm_instance)
 
